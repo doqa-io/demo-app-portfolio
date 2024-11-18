@@ -34,7 +34,10 @@ jobs:
           script: |
             # Ensure the target directory exists on the server
             mkdir -p /var/www/doqa-io
-            # Copy files from GitHub Actions runner to the server
+            # Define RSYNC_RSH to bypass host key checking and ensure SSH works with rsync
+            export RSYNC_RSH="ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa"
+            # Copy files from GitHub Actions runner to the server using rsync
             rsync -avz --delete client/build/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/doqa-io/
             # Restart Nginx if needed
             sudo systemctl restart nginx
+      
