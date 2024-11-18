@@ -24,12 +24,6 @@ jobs:
           npm run build
         working-directory: client
 
-      - name: Add SSH key and Start ssh-agent
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
-          ssh-passphrase: ${{ secrets.SERVER_SSH_PASSPHRASE }}
-
       - name: Deploy to Server
         uses: appleboy/scp-action@v0.0.6
         with:
