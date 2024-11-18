@@ -8,7 +8,7 @@ function App() {
         <img src={logo} className="App-logo" alt="logo" />
         <p>
           Edit <code>src/App.js</code> and save to reload.
-          Making a hello world to see if my tweak in github actions works
+          Making a hello world to see if my tweak in github actions works now
         </p>
         <a
           className="App-link"
