@@ -32,9 +32,9 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
           script: |
-            # Ensure the target directory exists
+            # Ensure the target directory exists on the server
             mkdir -p /var/www/doqa-io
-            # Copy files from GitHub Actions runner to the server
-            rsync -avz --delete client/build/ ${username}@${host}:/var/www/doqa-io/
+            # Copy files from GitHub Actions runner to the server using rsync
+            rsync -avz --delete client/build/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/doqa-io/
             # Restart Nginx if needed
             sudo systemctl restart nginx
