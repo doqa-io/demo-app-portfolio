@@ -27,11 +27,6 @@ jobs:
           npm run build
         working-directory: client
 
-      - name: Write SSH Key to File
-        run: |
-          echo "${{ secrets.SERVER_SSH_KEY }}" > /tmp/ssh_key
-          chmod 600 /tmp/ssh_key
-
       - name: Deploy to Server using SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -39,11 +34,4 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
-          script: |
-            # Ensure the target directory exists on the server
-            mkdir -p /var/www/doqa-io
-            # Use the temporary key file in rsync
-            RSYNC_RSH="ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no" \
-            rsync -avz --delete client/build/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/doqa-io/
-            # Restart Nginx if needed
-            sudo systemctl restart nginx
+          script: whoami
