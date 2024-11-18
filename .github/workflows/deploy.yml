@@ -18,6 +18,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install Latest npm
+        run: npm install -g npm@latest
+
       - name: Install dependencies and build
         run: |
           npm install
@@ -32,12 +35,6 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
           script: |
-            # Ensure the target directory exists on the server
             mkdir -p /var/www/doqa-io
-            # Define RSYNC_RSH to bypass host key checking and ensure SSH works with rsync
-            export RSYNC_RSH="ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa"
-            # Copy files from GitHub Actions runner to the server using rsync
-            rsync -avz --delete client/build/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/doqa-io/
-            # Restart Nginx if needed
+            rsync -avz -e "ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no" client/build/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/doqa-io/
             sudo systemctl restart nginx
-      
