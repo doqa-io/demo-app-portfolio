@@ -51,6 +51,6 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
           source: "server/*"
-          target: "/var/www/doqa-io/server"
+          target: "/var/www/doqa-io/"
           overwrite: true
 
