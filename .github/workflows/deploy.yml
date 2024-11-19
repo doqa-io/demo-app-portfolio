@@ -36,7 +36,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
           source: "client/build/*"
-          target: "/var/www/doqa-io/client"
+          target: "/var/www/doqa-io/"
 
       # Backend Deploy
       - name: Install backend dependencies
