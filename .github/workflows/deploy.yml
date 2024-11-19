@@ -52,3 +52,5 @@ jobs:
           port: 22
           source: "server/*"
           target: "/var/www/doqa-io/server"
+          overwrite: true
+
