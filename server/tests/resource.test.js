@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../index'); // Adjust if app initialization is separate
+const app = require('../index'); // Import the app without starting the server
 
 describe('GET /api/resources', () => {
   it('should return an array of resources', async () => {
