@@ -84,6 +84,11 @@ jobs:
           source: "server/*"
           target: "/var/www/doqa-io/"
 
+      # Build the frontend
+      - name: Build frontend
+        working-directory: ./client
+        run: npm run build
+
       # Deploy frontend using SCP
       - name: Deploy frontend using SCP
         uses: appleboy/scp-action@v0.1.6
