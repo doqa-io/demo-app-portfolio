@@ -119,7 +119,7 @@ jobs:
         with:
           config-file: ./cypress.config.js
           working-directory: ./client
-          install: false
+          install: true
           start: npm run cy:run
         env:
           CYPRESS_BASE_URL: https://doqa.io
