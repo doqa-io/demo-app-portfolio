@@ -113,3 +113,14 @@ jobs:
           script: |
             pm2 restart all
 
+      # Run Cypress tests on live site
+      - name: Run Cypress tests on live front
+        uses: cypress-io/github-action@v5
+        with:
+          config-file: ./cypress.config.js
+          working-directory: ./client
+          install: false
+          start: npm run cy:run
+        env:
+          CYPRESS_BASE_URL: https://doqa.io
+          CYPRESS_API_URL: https://doqa.io/api
