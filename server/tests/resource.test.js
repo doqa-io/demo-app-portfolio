@@ -7,6 +7,7 @@ beforeEach(async () => {
 
 afterAll(async () => {
     await pool.end();
+    console.log('Active connections:', pool.totalCount);
 });
 
 describe('Resources API', () => {

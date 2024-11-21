@@ -1,11 +1,7 @@
 require('dotenv').config();
 const express = require('express');
-const { Pool } = require('pg');
+const pool = require('./db');
 const app = express();
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-});
 
 app.use(express.json()); // Middleware to parse JSON request bodies
 
