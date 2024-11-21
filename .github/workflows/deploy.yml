@@ -35,8 +35,8 @@ jobs:
         with:
           node-version: '20'
 
-      # Install dependencies
-      - name: Install dependencies
+      # Install server dependencies
+      - name: Install server dependencies
         working-directory: ./server
         run: npm install
 
@@ -55,12 +55,22 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: node dbSetup.js
 
-      # Run tests
-      - name: Run tests
+      # Run backend tests
+      - name: Run backend tests
         working-directory: ./server
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NODE_ENV: test
+        run: npm test
+
+      # Install frontend dependencies
+      - name: Install frontend dependencies
+        working-directory: ./client
+        run: npm install
+
+      # Run frontend tests
+      - name: Run frontend tests
+        working-directory: ./client
         run: npm test
 
       # Deploy backend using SCP
@@ -95,3 +105,12 @@ jobs:
           port: 22
           script: |
             pm2 restart all
+
+      # Run Cypress tests on live site
+      - name: Run Cypress tests on live front
+        uses: cypress-io/github-action@v5
+        with:
+          config-file: cypress.json
+        env:
+          CYPRESS_BASE_URL: https://doqa.io
+          CYPRESS_API_URL: https://doqa.io/api

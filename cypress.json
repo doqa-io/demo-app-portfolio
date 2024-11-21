@@ -1,0 +1,7 @@
+{
+    "baseUrl": "https://doqa.io",
+    "integrationFolder": "cypress/integration",
+    "viewportWidth": 1280,
+    "viewportHeight": 720
+  }
+  
