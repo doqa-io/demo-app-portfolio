@@ -1,10 +1,12 @@
 import React from 'react';
+import logo from '../logo_doqa.webp'; 
 
 const LandingPage = () => {
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
             <header className="bg-blue-600 text-white py-4 sticky top-0 z-50 shadow-lg">
                 <nav className="container mx-auto flex justify-between items-center">
+                    <img src={logo} alt="doqa.io" className="w-12 h-12" /> 
                     <h1 className="text-2xl font-bold">doqa.io</h1>
                     <ul className="flex space-x-4">
                         <li><a href="/" className="hover:underline">Home</a></li>
@@ -14,8 +16,7 @@ const LandingPage = () => {
                 </nav>
             </header>
             <main className="flex-grow">
-                <section className="relative">
-                    <img src="https://source.unsplash.com/random/1600x900" alt="Hero" className="w-full h-96 object-cover" />
+                <section className="relative flex justify-center items-center bg-blue-600 h-96">
                     <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-center text-white">
                         <h2 className="text-5xl font-bold mb-4 animate-fadeIn">Showcasing Excellence in QA</h2>
                         <p className="text-lg mb-6 animate-fadeIn">Explore how automated tests and quality assurance shape modern web apps.</p>
@@ -33,28 +34,19 @@ const LandingPage = () => {
                             <p className="text-gray-600">Leverage automated tests to catch bugs early and ensure consistent quality.</p>
                         </div>
                         <div className="w-1/3 p-4 bg-white shadow-lg rounded-lg">
-                            <h4 className="text-xl font-bold text-gray-800 mb-2">Continuous Integration</h4>
-                            <p className="text-gray-600">Integrate testing into your CI/CD pipeline for seamless deployments.</p>
+                            <h4 className="text-xl font-bold text-gray-800 mb-2">Manual Testing</h4>
+                            <p className="text-gray-600">Our experts perform thorough manual testing to cover edge cases and ensure a seamless user experience.</p>
                         </div>
                         <div className="w-1/3 p-4 bg-white shadow-lg rounded-lg">
-                            <h4 className="text-xl font-bold text-gray-800 mb-2">Expert QA Team</h4>
-                            <p className="text-gray-600">Our team of experts ensures your applications meet the highest quality standards.</p>
+                            <h4 className="text-xl font-bold text-gray-800 mb-2">Performance Testing</h4>
+                            <p className="text-gray-600">We conduct performance testing to ensure your application can handle high traffic and perform well under stress.</p>
                         </div>
                     </div>
                 </section>
             </main>
-            <footer className="bg-gray-800 text-white py-4 text-center">
-                <p>&copy; {new Date().getFullYear()} doqa.io</p>
-                <div className="flex justify-center space-x-4 mt-2">
-                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400">
-                        <i className="fab fa-twitter"></i>
-                    </a>
-                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
-                        <i className="fab fa-facebook"></i>
-                    </a>
-                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-700">
-                        <i className="fab fa-linkedin"></i>
-                    </a>
+            <footer className="bg-gray-800 text-white py-4">
+                <div className="container mx-auto text-center">
+                    <p>&copy; 2024 doqa.io. All rights reserved.</p>
                 </div>
             </footer>
         </div>
