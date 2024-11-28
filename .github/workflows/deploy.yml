@@ -100,7 +100,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
           source: "client/build/*"
-          target: "/var/www/doqa-io/client/build"
+          target: "/var/www/doqa-io/"
 
       # Restart the application
       - name: Restart server
