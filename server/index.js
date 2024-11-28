@@ -1,6 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const pool = require('./db');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
 const app = express();
 
 app.use(express.json()); // Middleware to parse JSON request bodies
@@ -11,6 +13,34 @@ const PORT = process.env.PORT || 3000;
 app.get('/', (req, res) => {
     res.send('Welcome to the doqa.io backend!');
 });
+
+// Health Check and Backend Landing Page
+app.get('/api', async (req, res) => {
+    const response = {
+        services: {
+            database: 'Unknown',
+            backend: 'Active',
+        },
+        resources: [
+            { name: 'Resources', url: '/api/resources' },
+        ],
+        swagger: '/api/docs',
+    };
+
+    try {
+        // Check database connection
+        await pool.query('SELECT 1');
+        response.services.database = 'Connected';
+    } catch (err) {
+        console.error("Database connection error:", err);
+        response.services.database = 'Disconnected';
+    }
+
+    res.status(200).json(response);
+});
+
+// Swagger documentation setup
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // GET /api/resources endpoint
 app.get('/api/resources', async (req, res) => {
