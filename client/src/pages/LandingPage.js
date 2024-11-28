@@ -1,5 +1,5 @@
 import React from 'react';
-import unicornLogo from '../../logo.svg';
+import unicornLogo from '/client/src/logo.svg';
 
 const LandingPage = () => {
     return (
