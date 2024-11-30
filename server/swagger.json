@@ -5,9 +5,9 @@
       "title": "Doqa.io API",
       "description": "API documentation for Doqa.io"
     },
-    "host": "localhost:4000",
+    "host": "doqa.io",
     "basePath": "/api",
-    "schemes": ["http"],
+    "schemes": ["https"],
     "paths": {
       "/resources": {
         "get": {

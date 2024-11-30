@@ -39,8 +39,8 @@ app.get('/api', async (req, res) => {
     res.status(200).json(response);
 });
 
-// Swagger documentation setup
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Swagger documentation
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, { explorer: true }));
 
 // GET /api/resources endpoint
 app.get('/api/resources', async (req, res) => {
