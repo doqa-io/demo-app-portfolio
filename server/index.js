@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 app.use('/static', express.static(path.join(__dirname, 'static')));
 
 // Route for the backend landing page
-app.get('/api', async (req, res) => {
+app.get('/', async (req, res) => {
     const services = {
         database: 'Unknown',
         backend: 'Active',
@@ -34,10 +34,10 @@ app.get('/api', async (req, res) => {
 });
 
 // Swagger documentation
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, { explorer: true }));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, { explorer: true }));
 
 // GET /api/resources endpoint
-app.get('/api/resources', async (req, res) => {
+app.get('/resources', async (req, res) => {
     try {
         const dbRes = await pool.query('SELECT * FROM resources');
         res.status(200).json(dbRes.rows);
@@ -48,7 +48,7 @@ app.get('/api/resources', async (req, res) => {
 });
 
 // POST /api/resources: Add a new resource
-app.post('/api/resources', async (req, res) => {
+app.post('/resources', async (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: "Name is required" });
 
@@ -65,7 +65,7 @@ app.post('/api/resources', async (req, res) => {
 });
 
 // GET /api/resources/:id: Fetch a specific resource by ID
-app.get('/api/resources/:id', async (req, res) => {
+app.get('/resources/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -83,7 +83,7 @@ app.get('/api/resources/:id', async (req, res) => {
 });
 
 // PUT /api/resources/:id: Update a resource by ID
-app.put('/api/resources/:id', async (req, res) => {
+app.put('/resources/:id', async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
 
@@ -105,7 +105,7 @@ app.put('/api/resources/:id', async (req, res) => {
 });
 
 // DELETE /api/resources/:id: Delete a resource by ID
-app.delete('/api/resources/:id', async (req, res) => {
+app.delete('/resources/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
