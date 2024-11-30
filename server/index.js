@@ -3,40 +3,34 @@ const express = require('express');
 const pool = require('./db');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
+const path = require('path');
 const app = express();
 
 app.use(express.json()); // Middleware to parse JSON request bodies
 
 const PORT = process.env.PORT || 3000;
 
-// Route to display a welcome message
-app.get('/', (req, res) => {
-    res.send('Welcome to the doqa.io backend!');
-});
+// Serve static assets for the landing page
+app.use('/static', express.static(path.join(__dirname, 'static')));
 
-// Health Check and Backend Landing Page
+// Route for the backend landing page
 app.get('/api', async (req, res) => {
-    const response = {
-        services: {
-            database: 'Unknown',
-            backend: 'Active',
-        },
-        resources: [
-            { name: 'Resources', url: '/api/resources' },
-        ],
-        swagger: '/api/docs',
+    const services = {
+        database: 'Unknown',
+        backend: 'Active',
     };
 
     try {
-        // Check database connection
+        // Health check for the database
         await pool.query('SELECT 1');
-        response.services.database = 'Connected';
+        services.database = 'Connected';
     } catch (err) {
         console.error("Database connection error:", err);
-        response.services.database = 'Disconnected';
+        services.database = 'Disconnected';
     }
 
-    res.status(200).json(response);
+    // Render the HTML template with dynamic data
+    res.sendFile(path.join(__dirname, 'static', 'landing.html'));
 });
 
 // Swagger documentation

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>doqa.io Backend</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+  <div class="container mx-auto my-8 p-8 bg-white shadow rounded">
+    <h1 class="text-4xl font-bold text-center text-blue-600">Welcome to the doqa.io Backend</h1>
+    <p class="text-lg text-center mt-4">This is the API hub for doqa.io.</p>
+
+    <!-- Health Check Section -->
+    <section class="mt-8">
+      <h2 class="text-2xl font-semibold text-gray-800">Health Checks</h2>
+      <ul class="mt-4">
+        <li class="flex items-center">
+          <span class="font-semibold">Backend: </span>
+          <span id="backend-status" class="ml-2 text-green-600">Active</span>
+        </li>
+        <li class="flex items-center">
+          <span class="font-semibold">Database: </span>
+          <span id="database-status" class="ml-2">Checking...</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Endpoints Section -->
+    <section class="mt-8">
+      <h2 class="text-2xl font-semibold text-gray-800">API Endpoints</h2>
+      <ul class="list-disc list-inside mt-4">
+        <li>
+          <a href="/api/resources" class="text-blue-500 hover:underline">/api/resources</a>
+        </li>
+        <li>
+          <a href="/api/docs" class="text-blue-500 hover:underline">Swagger Documentation</a>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <script>
+    // Fetch health check dynamically
+    async function updateHealthCheck() {
+      try {
+        const response = await fetch('/api');
+        const data = await response.json();
+        document.getElementById('database-status').textContent =
+          data.services.database === 'Connected' ? 'Connected' : 'Disconnected';
+      } catch (error) {
+        document.getElementById('database-status').textContent = 'Error';
+      }
+    }
+
+    updateHealthCheck();
+  </script>
+</body>
+</html>
