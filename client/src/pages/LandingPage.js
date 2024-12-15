@@ -1,5 +1,7 @@
 import React from 'react';
 import logo from '../logo_doqa.webp'; 
+import { Link } from 'react-router-dom';
+
 
 const LandingPage = () => {
     return (
@@ -9,8 +11,9 @@ const LandingPage = () => {
                     <img src={logo} alt="doqa.io" className="w-12 h-12" /> 
                     <h1 className="text-2xl font-bold">doqa.io</h1>
                     <ul className="flex space-x-4">
-                        <li><a href="/" className="hover:underline">Home</a></li>
+                        <li><Link to="/" className="hover:underline">Home</Link></li>
                         <li><a href="/api" className="hover:underline">API</a></li>
+                        <li><Link to="/resources" className="hover:underline">Resources</Link></li>
                         <li><a href="/contact" className="hover:underline">Contact</a></li>
                     </ul>
                 </nav>
@@ -24,6 +27,16 @@ const LandingPage = () => {
                             Explore the API
                         </a>
                     </div>
+                </section>
+                <section className="container mx-auto py-16 text-center">
+                    <h3 className="text-3xl font-bold text-gray-800 mb-4">CRUD Resources</h3>
+                    <p className="text-gray-600 mb-8">Manage resources with create, read, update, and delete functionality.</p>
+                    <Link
+                        to="/resources"
+                        className="inline-block bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition duration-300"
+                    >
+                        Go to CRUD Resources
+                    </Link>
                 </section>
                 <section className="container mx-auto py-16 text-center">
                     <h3 className="text-3xl font-bold text-gray-800 mb-4">Why Choose Us?</h3>
