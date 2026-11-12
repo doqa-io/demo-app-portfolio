@@ -13,6 +13,36 @@ const api = express.Router();
 app.use(express.json()); // Middleware to parse JSON request bodies
 
 const PORT = process.env.PORT || 4000;
+const NAME_MAX_LENGTH = 100; // aligné sur VARCHAR(100) dans dbSetup.js
+const PG_INT_MAX = 2147483647;
+
+// Renvoie l'identifiant entier positif, ou null s'il est invalide.
+function parseId(raw) {
+    if (!/^\d+$/.test(raw)) return null;
+    const id = Number(raw);
+    return id >= 1 && id <= PG_INT_MAX ? id : null;
+}
+
+// Renvoie { name } nettoyé, ou { error } si le corps est invalide.
+function validateResourceBody(body) {
+    const name = body && typeof body === 'object' ? body.name : undefined;
+    if (name === undefined || name === null) return { error: "Name is required" };
+    if (typeof name !== 'string') return { error: "Name must be a string" };
+    const trimmed = name.trim();
+    if (!trimmed) return { error: "Name is required" };
+    if (trimmed.length > NAME_MAX_LENGTH) {
+        return { error: `Name must be at most ${NAME_MAX_LENGTH} characters` };
+    }
+    return { name: trimmed };
+}
+
+// Valide :id pour toutes les routes /resources/:id
+api.param('id', (req, res, next, raw) => {
+    const id = parseId(raw);
+    if (id === null) return res.status(400).json({ error: "Invalid id" });
+    req.resourceId = id;
+    next();
+});
 
 // Toute l'API est servie sous /api, comme l'appelle le front.
 
@@ -50,8 +80,8 @@ api.get('/resources', async (req, res) => {
 
 // POST /api/resources: Add a new resource
 api.post('/resources', async (req, res) => {
-    const { name } = req.body;
-    if (!name) return res.status(400).json({ error: "Name is required" });
+    const { name, error } = validateResourceBody(req.body);
+    if (error) return res.status(400).json({ error });
 
     try {
         const dbRes = await pool.query(
@@ -67,7 +97,7 @@ api.post('/resources', async (req, res) => {
 
 // GET /api/resources/:id: Fetch a specific resource by ID
 api.get('/resources/:id', async (req, res) => {
-    const { id } = req.params;
+    const id = req.resourceId;
 
     try {
         const dbRes = await pool.query('SELECT * FROM resources WHERE id = $1', [id]);
@@ -85,8 +115,9 @@ api.get('/resources/:id', async (req, res) => {
 
 // PUT /api/resources/:id: Update a resource by ID
 api.put('/resources/:id', async (req, res) => {
-    const { id } = req.params;
-    const { name } = req.body;
+    const id = req.resourceId;
+    const { name, error } = validateResourceBody(req.body);
+    if (error) return res.status(400).json({ error });
 
     try {
         const dbRes = await pool.query(
@@ -107,7 +138,7 @@ api.put('/resources/:id', async (req, res) => {
 
 // DELETE /api/resources/:id: Delete a resource by ID
 api.delete('/resources/:id', async (req, res) => {
-    const { id } = req.params;
+    const id = req.resourceId;
 
     try {
         const dbRes = await pool.query('DELETE FROM resources WHERE id = $1 RETURNING *', [id]);
@@ -124,6 +155,14 @@ api.delete('/resources/:id', async (req, res) => {
 });
 
 app.use('/api', api);
+
+// Corps JSON mal formé : erreur du client, pas du serveur
+app.use((err, req, res, next) => {
+    if (err.type === 'entity.parse.failed') {
+        return res.status(400).json({ error: "Malformed JSON body" });
+    }
+    return next(err);
+});
 app.use('/static', express.static(path.join(__dirname, 'static')));
 
 // Optionnel : sert le build React (client/build) depuis le même processus,

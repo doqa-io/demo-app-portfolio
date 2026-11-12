@@ -14,12 +14,3 @@ const pool = new Pool(
 );
 
 module.exports = pool;
-
-console.log({
-    connectionString: process.env.DATABASE_URL,
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-});
-
