@@ -1,102 +1,82 @@
-# Application de Démonstration pour Portfolio de Freelance en Qualité Logicielle
+# demo-app-portfolio : une petite application et sa stratégie de test
 
-## Description
+[![Tests](https://github.com/doqa-io/demo-app-portfolio/actions/workflows/tests.yml/badge.svg)](https://github.com/doqa-io/demo-app-portfolio/actions/workflows/tests.yml)
 
-Ce projet est une application de démonstration développée pour illustrer des compétences en qualité logicielle et en automatisation de tests. L'application permet aux utilisateurs de s'enregistrer, de télécharger des images (scans de dessins d'enfants), de gérer ces images, et de les partager entre utilisateurs inscrits.
+Application de démonstration de [doqa.io](https://doqa.io). Le sujet n'est pas l'application elle-même, volontairement simple, mais la façon dont elle est testée : tests d'API, tests de composants, tests de bout en bout et intégration continue.
 
-Ce projet inclut :
-- Une interface front-end développée en React.
-- Un serveur back-end basé sur Node.js et Express.
-- Une base de données pour stocker les informations utilisateur et les images partagées.
-- Des tests automatisés couvrant les tests unitaires, d'API, et end-to-end.
-- Une infrastructure CI/CD avec IONOS Deploy Now pour le déploiement continu.
+## Ce que fait l'application
 
-## Fonctionnalités
+- **Une API REST** (Node.js, Express, PostgreSQL) qui gère des « ressources » identifiées par un nom : liste, lecture, création, modification et suppression.
+- **Un front React** avec une page d'accueil et un écran de gestion des ressources (lister, ajouter, supprimer).
+- **Une documentation Swagger** de l'API, avec « Try it out » sur le serveur en cours d'exécution.
+- **Une page d'état du back-end** qui indique si la base de données répond.
 
-- Inscription et authentification utilisateur.
-- Téléchargement, suppression, et gestion d'images.
-- Partage d'images entre utilisateurs.
-- Interface utilisateur responsive.
-- Sécurité avec JWT pour l'authentification.
+L'application n'a ni comptes utilisateurs ni authentification. La modification d'une ressource n'existe que dans l'API, pas encore dans l'interface.
 
-## Prérequis
+## Architecture
 
-- **Node.js** v14 ou supérieur
-- **Docker** pour la conteneurisation et le déploiement local
-- **GitHub Account** pour le CI/CD avec GitHub Actions
-- **IONOS Deploy Now** pour le déploiement automatisé
+```text
+client/   Front React (Create React App, Tailwind CSS)
+server/   API Express + PostgreSQL, documentation Swagger (swagger.json)
+e2e/      Tests de bout en bout Playwright
+.github/workflows/tests.yml   Intégration continue
+docker-compose.yml            Base PostgreSQL locale et jetable
+```
 
-## Installation
+| Route | Rôle |
+|---|---|
+| `GET /api/resources` | Liste des ressources |
+| `POST /api/resources` | Création (`{ "name": "..." }`, 1 à 100 caractères) |
+| `GET /api/resources/:id` | Lecture |
+| `PUT /api/resources/:id` | Modification |
+| `DELETE /api/resources/:id` | Suppression |
+| `GET /api/health` | État du back-end et de la base |
+| `GET /api/docs` | Documentation Swagger |
+| `GET /api` | Page d'accueil du back-end |
 
-1. **Cloner le repository** :
+Les entrées invalides (identifiant non entier, nom absent, vide ou trop long, JSON mal formé) reçoivent une réponse `400` avec un message d'erreur, et non une erreur serveur.
 
-   ```bash
-   git clone https://github.com/your-username/demo-app-portfolio.git
-   cd demo-app-portfolio
-   ```
-2. **Installer les dépendances** :
+Le schéma de la base est créé automatiquement au démarrage du serveur et avant les tests.
 
-   - Pour le back-end :
-     ```bash
-     cd server
-     npm install
-     ```
+## Lancer l'application
 
-   - Pour le front-end :
-     ```bash
-     cd ../client
-     npm install
-     ```
+Prérequis : Node.js 20 ou plus, Docker.
 
-3. **Configurer les variables d'environnement** :
+```bash
+npm run setup     # installe les dépendances (racine, server, client)
+npm start         # démarre PostgreSQL, construit le front et sert le tout sur http://localhost:4000
+```
 
-   Créer un fichier `.env` dans le dossier `server` avec les variables suivantes :
-   ```env
-   PORT=4000
-   JWT_SECRET=your_jwt_secret
-   DATABASE_URL=your_database_url
-   ```
-4. **Démarrer l'application en local** :
+En développement, avec rechargement automatique du front sur http://localhost:3000 :
 
-   - Pour le back-end :
-     ```bash
-     cd server
-     npm start
-     ```
+```bash
+npm run dev
+```
 
-   - Pour le front-end :
-     ```bash
-     cd ../client
-     npm start
-     ```
-## Déploiement
-    Ce projet utilise GitHub Actions pour le déploiement CI/CD. À chaque push sur la branche main, les tests sont exécutés et l'application est déployée via IONOS Deploy Now.
+La configuration par défaut (`server/.env.example`) correspond à la base de `docker-compose.yml`. Pour la modifier, copiez ce fichier en `server/.env`. `npm run db:down` arrête la base et efface ses données.
 
-## Tests
+## Stratégie de test
 
-    Ce projet inclut une couverture de tests automatisés pour garantir la stabilité et la qualité du code :
-    - Tests unitaires avec Jest pour les fonctions critiques.
-    - Tests d'intégration avec Supertest pour les API back-end.
-    - Tests end-to-end avec Cypress pour simuler les interactions utilisateur.
-    
-    Pour lancer les tests :
-    ```# Tests unitaires et d'intégration dans le back-end
-        cd server
-        npm test
+| Niveau | Outil | Ce qui est vérifié | Commande |
+|---|---|---|---|
+| API | Jest + Supertest, vraie base PostgreSQL | Chaque route, les cas d'erreur (`400`, `404`, `500`, `503`), la validation des entrées, l'absence de secret dans les logs | `npm run test:api` |
+| Composants | Jest + Testing Library, axios simulé | Page d'accueil, écran des ressources : chargement, ajout, suppression, messages d'erreur | `npm run test:client` |
+| Bout en bout | Playwright, Chrome desktop et Pixel 7 | Parcours CRUD complet dans le navigateur, vérifié après rechargement et dans l'API ; navigation ; page d'état ; Swagger « Try it out » sur le serveur local | `npm run test:e2e:full` |
 
-       # Tests end-to-end dans le front-end
-        cd ../client
-        npm run cypress:open
-    ```
+Les tests de bout en bout tournent sur l'application lancée en local, jamais sur la production. Playwright démarre lui-même le serveur Express, qui sert l'API et le build du front. Chaque test crée ses propres données avec un nom unique et les supprime ensuite, ce qui permet de lancer les tests en parallèle sur la même base.
 
-## CI/CD
+`npm run test:e2e:full` démarre la base et construit le front avant les tests. Si c'est déjà fait, `npm run test:e2e` suffit. Le rapport HTML est dans `playwright-report/` (`npx playwright show-report`).
 
-Ce projet utilise GitHub Actions pour le CI/CD. Les workflows sont définis dans le dossier `.github/workflows`. Vous pouvez les personnaliser pour votre propre déploiement.
+Anomalie connue : en mobile, la page d'accueil déborde horizontalement. Le test correspondant est marqué `fixme` dans `e2e/landing.spec.js` en attendant la correction.
 
-## Déploiement
+## Intégration continue
 
-Ce projet est configuré pour le déploiement continu avec IONOS Deploy Now. Vous pouvez suivre les instructions de [IONOS Deploy Now](https://deploy-now.ionos.com/) pour déployer votre propre application.
+Le workflow `tests.yml` s'exécute sur chaque pull request et sur chaque push sur `main`, sans aucun secret. Il comporte trois jobs :
 
-## Contributeurs
+1. **API** : tests Jest et Supertest sur un PostgreSQL jetable.
+2. **Front** : tests Jest, puis build de production (ESLint inclus).
+3. **Bout en bout** : tests Playwright sur le build, avec un PostgreSQL jetable.
 
-- [John Doe]
+Les rapports de couverture, le rapport Playwright et les traces des échecs sont conservés en artefacts.
+
+Le déploiement (`deploy.yml`) est un workflow distinct.
