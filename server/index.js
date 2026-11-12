@@ -1,45 +1,46 @@
 require('dotenv').config();
-const express = require('express');
-const pool = require('./db');
-const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./swagger.json');
+const fs = require('fs');
 const path = require('path');
+const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const pool = require('./db');
+const { ensureSchema } = require('./dbSetup');
+const swaggerDocument = require('./swagger.json');
+
 const app = express();
+const api = express.Router();
 
 app.use(express.json()); // Middleware to parse JSON request bodies
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
-// Serve static assets for the landing page
-app.use('/static', express.static(path.join(__dirname, 'static')));
+// Toute l'API est servie sous /api, comme l'appelle le front.
 
-// Route for the backend landing page
-app.get('/', async (req, res) => {
-    const services = {
-        database: 'Unknown',
-        backend: 'Active',
-    };
-
-    try {
-        // Health check for the database
-        await pool.query('SELECT 1');
-        services.database = 'Connected';
-    } catch (err) {
-        console.error("Database connection error:", err);
-        services.database = 'Disconnected';
-    }
-
-    // Render the HTML template with dynamic data
+// Page d'accueil du back-end
+api.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'static', 'landing.html'));
 });
 
-// Swagger documentation
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, { explorer: true }));
-
-// GET /api/resources endpoint
-app.get('/resources', async (req, res) => {
+// État du back-end et de la base, lu par la page d'accueil
+api.get('/health', async (req, res) => {
+    const services = { backend: 'Active', database: 'Connected' };
     try {
-        const dbRes = await pool.query('SELECT * FROM resources');
+        await pool.query('SELECT 1');
+        res.status(200).json({ services });
+    } catch (err) {
+        console.error('Database connection error:', err.message);
+        services.database = 'Disconnected';
+        res.status(503).json({ services });
+    }
+});
+
+// Swagger documentation
+api.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, { explorer: true }));
+
+// GET /api/resources: list all resources
+api.get('/resources', async (req, res) => {
+    try {
+        const dbRes = await pool.query('SELECT * FROM resources ORDER BY id');
         res.status(200).json(dbRes.rows);
     } catch (err) {
         console.error(err);
@@ -48,7 +49,7 @@ app.get('/resources', async (req, res) => {
 });
 
 // POST /api/resources: Add a new resource
-app.post('/resources', async (req, res) => {
+api.post('/resources', async (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: "Name is required" });
 
@@ -65,7 +66,7 @@ app.post('/resources', async (req, res) => {
 });
 
 // GET /api/resources/:id: Fetch a specific resource by ID
-app.get('/resources/:id', async (req, res) => {
+api.get('/resources/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -83,7 +84,7 @@ app.get('/resources/:id', async (req, res) => {
 });
 
 // PUT /api/resources/:id: Update a resource by ID
-app.put('/resources/:id', async (req, res) => {
+api.put('/resources/:id', async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
 
@@ -105,7 +106,7 @@ app.put('/resources/:id', async (req, res) => {
 });
 
 // DELETE /api/resources/:id: Delete a resource by ID
-app.delete('/resources/:id', async (req, res) => {
+api.delete('/resources/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -122,11 +123,34 @@ app.delete('/resources/:id', async (req, res) => {
     }
 });
 
+app.use('/api', api);
+app.use('/static', express.static(path.join(__dirname, 'static')));
+
+// Optionnel : sert le build React (client/build) depuis le même processus,
+// pour un lancement en une commande et pour les tests de bout en bout.
+const clientBuildDir = process.env.CLIENT_BUILD_DIR
+    ? path.resolve(__dirname, process.env.CLIENT_BUILD_DIR)
+    : null;
+if (clientBuildDir && fs.existsSync(path.join(clientBuildDir, 'index.html'))) {
+    app.use(express.static(clientBuildDir));
+    // Routage côté client : toute route hors /api renvoie index.html
+    app.get(/^\/(?!api(\/|$)).*/, (req, res) => {
+        res.sendFile(path.join(clientBuildDir, 'index.html'));
+    });
+}
+
 // Start the server if not in a test environment
 if (process.env.NODE_ENV !== 'test') {
-    app.listen(PORT, () => {
-        console.log(`Backend server running on port ${PORT}`);
-    });
+    ensureSchema(pool)
+        .then(() => {
+            app.listen(PORT, () => {
+                console.log(`Backend server running on port ${PORT}`);
+            });
+        })
+        .catch((err) => {
+            console.error('Unable to prepare the database schema:', err.message);
+            process.exit(1);
+        });
 }
 
 // Export app and pool for testing

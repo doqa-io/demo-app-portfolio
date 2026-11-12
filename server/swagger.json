@@ -1,103 +1,165 @@
 {
-    "swagger": "2.0",
-    "info": {
-      "version": "1.0.0",
-      "title": "Doqa.io API",
-      "description": "API documentation for Doqa.io"
-    },
-    "host": "doqa.io",
-    "basePath": "/api",
-    "schemes": ["https"],
-    "paths": {
-      "/resources": {
-        "get": {
-          "summary": "Get all resources",
-          "responses": {
-            "200": {
-              "description": "Successful response",
-              "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/definitions/Resource"
-                }
-              }
-            }
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Doqa.io API",
+    "description": "API documentation for Doqa.io"
+  },
+  "basePath": "/api",
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health of the back-end and the database",
+        "responses": {
+          "200": {
+            "description": "Back-end and database up"
+          },
+          "503": {
+            "description": "Database unreachable"
           }
-        },
-        "post": {
-          "summary": "Create a new resource",
-          "parameters": [
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
+        }
+      }
+    },
+    "/resources": {
+      "get": {
+        "summary": "Get all resources",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "array",
+              "items": {
                 "$ref": "#/definitions/Resource"
               }
-            }
-          ],
-          "responses": {
-            "201": {
-              "description": "Resource created"
             }
           }
         }
       },
-      "/resources/{id}": {
-        "get": {
-          "summary": "Get a resource by ID",
-          "parameters": [
-            {
-              "name": "id",
-              "in": "path",
-              "required": true,
-              "type": "integer"
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successful response",
-              "schema": {
-                "$ref": "#/definitions/Resource"
-              }
+      "post": {
+        "summary": "Create a new resource",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ResourceInput"
             },
-            "404": {
-              "description": "Resource not found"
-            }
+            "required": true
           }
-        },
-        "delete": {
-          "summary": "Delete a resource by ID",
-          "parameters": [
-            {
-              "name": "id",
-              "in": "path",
-              "required": true,
-              "type": "integer"
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Resource deleted"
-            },
-            "404": {
-              "description": "Resource not found"
+        ],
+        "responses": {
+          "201": {
+            "description": "Resource created",
+            "schema": {
+              "$ref": "#/definitions/Resource"
             }
           }
         }
       }
     },
-    "definitions": {
-      "Resource": {
-        "type": "object",
-        "properties": {
-          "id": {
+    "/resources/{id}": {
+      "get": {
+        "summary": "Get a resource by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/Resource"
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a resource by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resource deleted"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a resource by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
             "type": "integer"
           },
-          "name": {
-            "type": "string"
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ResourceInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resource updated",
+            "schema": {
+              "$ref": "#/definitions/Resource"
+            }
+          },
+          "404": {
+            "description": "Resource not found"
           }
         }
       }
     }
+  },
+  "definitions": {
+    "Resource": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "ResourceInput": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        }
+      }
+    }
   }
-  
+}
