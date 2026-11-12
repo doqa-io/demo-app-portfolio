@@ -1,0 +1,140 @@
+name: Tests
+
+# Tests à chaque pull request et à chaque push sur main.
+# Aucun déploiement ici : deploy.yml reste séparé.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  # Base jetable du service Postgres ci-dessous, sans aucun secret.
+  DATABASE_URL: postgres://demo:demo@localhost:5432/demo
+
+jobs:
+  api:
+    name: API (Jest + Supertest)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: demo
+          POSTGRES_USER: demo
+          POSTGRES_PASSWORD: demo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U demo -d demo"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - name: Tests et couverture
+        run: npm run test:coverage
+      - name: Couverture API
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-api
+          path: server/coverage/
+          if-no-files-found: ignore
+
+  client:
+    name: Front (Jest + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      - name: Tests et couverture
+        run: npm run test:ci
+      - name: Couverture front
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-client
+          path: client/coverage/
+          if-no-files-found: ignore
+      - name: Build (lint ESLint inclus)
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: client-build
+          path: client/build/
+          retention-days: 1
+
+  e2e:
+    name: Bout en bout (Playwright)
+    needs: client
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: demo
+          POSTGRES_USER: demo
+          POSTGRES_PASSWORD: demo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U demo -d demo"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: server
+      - name: Récupérer le build du front
+        uses: actions/download-artifact@v4
+        with:
+          name: client-build
+          path: client/build/
+      - name: Installer Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Tests Playwright (desktop et mobile)
+        run: npx playwright test
+      - name: Rapport Playwright
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
