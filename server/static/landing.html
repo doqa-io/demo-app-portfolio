@@ -44,7 +44,7 @@
     // Fetch health check dynamically
     async function updateHealthCheck() {
       try {
-        const response = await fetch('/api');
+        const response = await fetch('/api/health');
         const data = await response.json();
         document.getElementById('database-status').textContent =
           data.services.database === 'Connected' ? 'Connected' : 'Disconnected';

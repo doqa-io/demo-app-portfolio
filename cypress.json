@@ -1,7 +1,0 @@
-{
-    "baseUrl": "https://doqa.io",
-    "e2eFolder": "cypress/e2e",
-    "viewportWidth": 1280,
-    "viewportHeight": 720
-  }
-  

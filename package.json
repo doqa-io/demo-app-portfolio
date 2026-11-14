@@ -1,0 +1,25 @@
+{
+  "name": "demo-app-portfolio",
+  "private": true,
+  "description": "Application de démonstration doqa.io : API Express + PostgreSQL et front React, avec sa stratégie de test",
+  "scripts": {
+    "setup": "npm install && npm --prefix server install && npm --prefix client install",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down -v",
+    "dev": "npm run db:up && concurrently -n api,web -c blue,green \"npm --prefix server start\" \"npm --prefix client start\"",
+    "build": "npm --prefix client run build",
+    "start": "npm run db:up && npm run build && cross-env CLIENT_BUILD_DIR=../client/build npm --prefix server start",
+    "test:api": "npm --prefix server test",
+    "test:client": "npm --prefix client run test:ci",
+    "test:e2e": "playwright test",
+    "test:e2e:full": "npm run db:up && npm run build && playwright test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "concurrently": "^9.2.5",
+    "cross-env": "^7.0.3"
+  }
+}
