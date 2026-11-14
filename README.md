@@ -79,4 +79,4 @@ Le workflow `tests.yml` s'exécute sur chaque pull request et sur chaque push su
 
 Les rapports de couverture, le rapport Playwright et les traces des échecs sont conservés en artefacts.
 
-Le déploiement (`deploy.yml`) est un workflow distinct.
+Le dépôt ne contient pas de workflow de déploiement : le projet se présente par son code, ses tests et sa CI.
